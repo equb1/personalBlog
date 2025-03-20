@@ -1,10 +1,10 @@
+// PostList.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { getColumns } from "./columns"; // 导入 getColumns 函数
 
 // 定义 Column 和 Post 类型
@@ -27,7 +27,7 @@ export default function PostList() {
   const [loading, setLoading] = useState(true);
 
   // 定义 handleDelete 函数
-  const handleDelete = async (postId: string) => {
+  const handleDelete = useCallback(async (postId: string) => {
     const confirmed = confirm("确定删除这篇文章吗？");
     if (confirmed) {
       try {
@@ -44,7 +44,7 @@ export default function PostList() {
         console.error("删除文章失败:", error);
       }
     }
-  };
+  }, []);
 
   // 获取文章数据
   const fetchPosts = async () => {

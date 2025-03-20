@@ -11,7 +11,7 @@ export async function getPosts() {
       }
     })
     return { posts }
-  } catch (error) {
+  } catch  {
     return { 
       posts: [],
       error: '获取文章失败'

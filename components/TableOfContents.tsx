@@ -47,7 +47,7 @@ export default function TableOfContents({ headings, onClick }: TableOfContentsPr
 
   // 监听滚动事件，更新活动锚点
   useEffect(() => {
-    let isMounted = true;
+    
     const handleScroll = () => {
       
       let newActiveHeading: string | null = null;

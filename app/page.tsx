@@ -11,24 +11,24 @@ import convertCategorySlug from '@/lib/convertCategorySlug';
 import Image from 'next/image';
 
 // 辅助函数定义
-function generateCalendarData() {
-  return Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setUTCDate(date.getUTCDate() - i);
-    return {
-      date: date.toISOString().split('T')[0], // 只取日期部分，不包含时间
-      count: Math.floor(Math.random() * 4)
-    };
-  }).reverse();
-}
+// function generateCalendarData() {
+//   return Array.from({ length: 30 }, (_, i) => {
+//     const date = new Date();
+//     date.setUTCDate(date.getUTCDate() - i);
+//     return {
+//       date: date.toISOString().split('T')[0], // 只取日期部分，不包含时间
+//       count: Math.floor(Math.random() * 4)
+//     };
+//   }).reverse();
+// }
 
-function generateVisitsData() {
-  return Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000 + 200));
-}
+// function generateVisitsData() {
+//   return Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000 + 200));
+// }
 
-function getRealVisitCount() {
-  return 12345;
-}
+// function getRealVisitCount() {
+//   return 12345;
+// }
 
 export const metadata: Metadata = {
   title: '技术博客 | 前沿开发实践',

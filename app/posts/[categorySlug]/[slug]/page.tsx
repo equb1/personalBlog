@@ -11,17 +11,17 @@ import Image from 'next/image'; // 引入 next/image
 
 const prisma = new PrismaClient();
 
-interface Post {
-    id: string;
-    title: string;
-    contentHtml: string;
-    themeConfig?: string;
-    user: { username: string; avatar?: string };
-    publishedAt?: Date;
-    createdAt: Date;
-    excerpt?: string;
-    slug: string;
-}
+// interface Post {
+//     id: string;
+//     title: string;
+//     contentHtml: string;
+//     themeConfig?: string;
+//     user: { username: string; avatar?: string };
+//     publishedAt?: Date;
+//     createdAt: Date;
+//     excerpt?: string;
+//     slug: string;
+// }
 
 export async function generateMetadata({ params }: { params: { categorySlug: string; slug: string } }) {
     const post = await prisma.post.findFirst({

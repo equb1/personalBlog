@@ -1,11 +1,13 @@
+// lib/generateColumns.ts
 type FieldConfig = {
   name: string
   label: string
   type: 'text' | 'richtext' | 'image' | 'select' | 'datetime'
+  cellClassName?: string // 添加可选属性 cellClassName
+  sortable?: boolean // 添加可选属性 sortable
 }
 
-// lib/generateColumns.ts
-export function generateColumns(fields: any[]) {
+export function generateColumns(fields: FieldConfig[]) {
   return fields.map(field => ({
     accessorKey: field.name,
     header: field.label,

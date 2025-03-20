@@ -8,7 +8,7 @@ declare module 'next-auth' {
   interface Session {
     user: {
       image: string;
-      accessToken: any;
+      accessToken: string | undefined; // 使用更具体的类型
       id: string;
       username: string;
       email: string;
@@ -28,6 +28,7 @@ declare module 'next-auth/jwt' {
     id: string;
     username: string;
     roles: string[];
+    accessToken: string | undefined; // 确保 JWT 中的 accessToken 也有更具体的类型
   }
 }
 
@@ -72,32 +73,32 @@ export const authOptions = {
       },
     }),
   ],
-  // Adding accessToken to JWT
-callbacks: {
-  async jwt({ token, user }: { token: JWT, user?: User }) {
-    if (user) {
-      // Store user information in the JWT
-      token.id = user.id;
-      token.username = user.username;
-      token.roles = user.roles || [];
-      // Add accessToken to the JWT (or generate it if needed)
-      token.accessToken = 'someAccessToken'; // You can replace this with the actual token if needed
-    }
-    return token;
-  },
+  callbacks: {
+    async jwt({ token, user }: { token: JWT, user?: User }) {
+      if (user) {
+        // Store user information in the JWT
+        token.id = user.id;
+        token.username = user.username;
+        token.roles = user.roles || [];
+        // Add accessToken to the JWT (or generate it if needed)
+        token.accessToken = 'someAccessToken'; // You can replace this with the actual token if needed
+      }
+      return token;
+    },
 
-  // Adding accessToken to session from JWT
-  async session({ session, token }: { session: Session, token: JWT }) {
-    session.user = {
-      id: token.id,
-      username: token.username,
-      email: token.email!,
-      roles: token.roles,
-      accessToken: token.accessToken, // Ensure the accessToken is added here
-    };
-    return session;
+    // Adding accessToken to session from JWT
+    async session({ session, token }: { session: Session, token: JWT }) {
+      session.user = {
+        id: token.id,
+        username: token.username,
+        email: token.email!,
+        roles: token.roles,
+        accessToken: token.accessToken, // Ensure the accessToken is added here
+        image: token.picture || ''
+      };
+      return session;
+    },
   },
-},
 
   session: {
     strategy: 'jwt' as const, // Ensure this is typed correctly

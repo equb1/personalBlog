@@ -1,9 +1,11 @@
+
+
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 // 获取单本书籍的详细信息
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = await params; // 使用 await 解析 params
+export async function GET(request: NextRequest, { params }: { params: any }) {
+  const { id } = params; // 直接解构 params，不需要 await
   try {
     const book = await prisma.book.findUnique({
       where: { id },
@@ -24,8 +26,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // 编辑书籍信息
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = await params; // 使用 await 解析 params
+export async function PUT(request: NextRequest, { params }: { params: any }) {
+  const { id } = params; // 直接解构 params，不需要 await
   const data = await request.json();
   try {
     const updatedBook = await prisma.book.update({
@@ -53,9 +55,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// 删除书籍 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = await params; // 使用 await 解析 params
+// 删除书籍
+export async function DELETE(request: NextRequest, { params }: { params: any }) {
+  const { id } = params; // 直接解构 params，不需要 await
   try {
     await prisma.book.delete({ where: { id } });
     return NextResponse.json({ message: "书籍删除成功" });

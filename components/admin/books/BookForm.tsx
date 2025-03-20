@@ -36,7 +36,7 @@ export const BookForm = ({ initialData, isEditMode = false }: BookFormProps) => 
     ...initialData,
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // 处理封面图片上传

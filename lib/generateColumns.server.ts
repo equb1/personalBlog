@@ -1,6 +1,13 @@
 "use server";
 
-export function generateServerColumns(fields: any[]) {
+// 定义 FieldConfig 类型
+type FieldConfig = {
+  name: string;
+  label: string;
+  cellClassName?: string; // 可选属性
+};
+
+export function generateServerColumns(fields: FieldConfig[]) {
   return fields.map(field => ({
     accessorKey: field.name,
     header: field.label,

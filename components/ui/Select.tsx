@@ -26,12 +26,11 @@ const SelectValue = SelectPrimitives.Value
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitives.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitives.Trigger> &
-    VariantProps<typeof selectVariants>
+  React.ComponentPropsWithoutRef<typeof SelectPrimitives.Trigger> & VariantProps<typeof selectVariants>
 >(({ className, size, children, ...props }, ref) => (
   <SelectPrimitives.Trigger
     ref={ref}
-    className={selectVariants({ size, className })}
+    className={selectVariants({ size, className })} // 确保 className 被使用
     {...props}
   >
     {children}
@@ -40,11 +39,12 @@ const SelectTrigger = React.forwardRef<
     </SelectPrimitives.Icon>
   </SelectPrimitives.Trigger>
 ))
+SelectTrigger.displayName = 'SelectTrigger'; // 添加 displayName
 
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitives.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitives.Content>
->(({ className, children, ...props }, ref) => (
+>(({ children, ...props }, ref) => (
   <SelectPrimitives.Portal>
     <SelectPrimitives.Content
       ref={ref}
@@ -57,11 +57,12 @@ const SelectContent = React.forwardRef<
     </SelectPrimitives.Content>
   </SelectPrimitives.Portal>
 ))
+SelectContent.displayName = 'SelectContent'; // 添加 displayName
 
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitives.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitives.Item>
->(({ className, children, ...props }, ref) => (
+>(({ children, ...props }, ref) => (
   <SelectPrimitives.Item
     ref={ref}
     className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
@@ -70,6 +71,7 @@ const SelectItem = React.forwardRef<
     <SelectPrimitives.ItemText>{children}</SelectPrimitives.ItemText>
   </SelectPrimitives.Item>
 ))
+SelectItem.displayName = 'SelectItem'; // 添加 displayName
 
 export {
   Select,

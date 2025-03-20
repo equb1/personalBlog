@@ -1,5 +1,4 @@
 // lib/admin-config.ts
-import { Prisma } from "@prisma/client"
 
 type FieldType = 'text' | 'richtext' | 'image' | 'select' | 'datetime'
 

@@ -304,7 +304,7 @@ export default function Navbar() {
       .split(' ')
       .map((word) => word[0].toUpperCase())
       .join('');
-    return `https://ui-avatars.com/api/?name=${initials}&background=random&color=fff&size=128`;
+    return `https://ui-avatars.com/api/?name=${initials}&background=0D8ABC&color=fff&size=128`;
   };
 
   return (

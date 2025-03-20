@@ -1,3 +1,4 @@
+// ImageUpload.tsx
 'use client';
 
 import { useCallback, useState } from 'react';
@@ -19,7 +20,7 @@ export const ImageUpload = ({ onUpload, onCancel, imageUrl, className }: ImageUp
   const [previewUrl, setPreviewUrl] = useState<string | null>(null); // 预览图片 URL
 
   // 处理上传
-  const handleUpload = async (file: File) => {
+  const handleUpload = useCallback(async (file: File) => {
     try {
       setError('');
       setIsUploading(true);
@@ -29,7 +30,7 @@ export const ImageUpload = ({ onUpload, onCancel, imageUrl, className }: ImageUp
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [onUpload]);
 
   // 处理拖拽事件
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -124,6 +125,7 @@ export const ImageUpload = ({ onUpload, onCancel, imageUrl, className }: ImageUp
               className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors"
             >
               <TrashIcon className="w-4 h-4" />
+            
             </button>
           </div>
         )}

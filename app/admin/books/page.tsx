@@ -1,10 +1,10 @@
+// BookList.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { getColumns } from "../posts/columns"; // 确保导入正确的 getColumns 函数
 
 // 定义 Column 和 Book 类型
@@ -29,7 +29,7 @@ export default function BookList() {
   const [error, setError] = useState<string | null>(null);
 
   // 定义 handleDelete 函数
-  const handleDelete = async (bookId: string) => {
+  const handleDelete = useCallback(async (bookId: string) => {
     const confirmed = confirm("确定删除这本书吗？");
     if (confirmed) {
       try {
@@ -48,7 +48,7 @@ export default function BookList() {
         setError("删除书籍失败");
       }
     }
-  };
+  }, []);
 
   // 获取书籍数据
   const fetchBooks = async () => {
