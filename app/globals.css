@@ -1,0 +1,399 @@
+/* ==================== */
+/* 引入 Tailwind CSS 的基础样式、组件样式和工具样式 */
+/* ==================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==================== */
+/* 自定义变量 */
+/* ==================== */
+:root {
+  --font-geist-sans: 'Geist Sans', sans-serif;
+  --font-geist-mono: 'Geist Mono', monospace;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+
+  /* 白天模式默认变量 */
+  --background: #FFE8D6;
+  --foreground: #333333;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --accent: #17a2b8;
+}
+
+/* 暗黑模式下的变量覆盖 */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #f5f5f5;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --accent: #17a2b8;
+}
+
+/* 基础样式设置 */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 4rem; /* 导航栏高度 */
+}
+
+body {
+  font-family: var(--font-geist-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* 滚动条样式自定义 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  opacity: 0.3;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--foreground);
+  opacity: 0.5;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
+}
+
+/* 元素过渡动画效果 */
+input,
+button,
+textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+button {
+  transition: all 0.2s ease;
+}
+
+[data-radix-popper-content-wrapper] {
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+/* 代码块样式 */
+.rehype-prism {
+  @apply p-4 rounded-lg my-4;
+}
+
+.code-block-wrapper {
+  @apply rounded-lg my-4 bg-[#f6f8fa];
+}
+
+.code-header {
+  @apply flex justify-between items-center px-3 py-2 bg-black/5 rounded-t-lg;
+}
+
+.code-lang {
+  @apply text-[#6e7781] text-sm;
+}
+
+.copy-button {
+  @apply bg-transparent border border-[#d0d7de] rounded px-2 py-0.5 text-sm cursor-pointer transition-all;
+}
+
+.copy-button:hover {
+  @apply bg-[#d0d7de]/20;
+}
+
+/* Markdown/MDX 内容样式 */
+.markdown-body .mdx-content {
+  all: inherit;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply mt-8 mb-4 font-bold;
+  }
+
+  pre {
+    @apply rounded-lg p-4 my-4;
+
+    code {
+      @apply bg-transparent p-0;
+    }
+  }
+
+  code:not(pre code) {
+    @apply px-2 py-1 rounded;
+  }
+
+  a {
+    @apply text-blue-600 dark:text-blue-400 hover:underline;
+  }
+}
+
+/* Markdown 内容被锚点定位时的动画效果 */
+.markdown-body :target {
+  animation: highlight 1.5s ease-out;
+}
+
+@keyframes highlight {
+  0% {
+    background-color: rgba(147, 197, 253, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* 组件样式 */
+@layer components {
+  .nav-hover-effect::before {
+    @apply bg-black/10;
+  }
+
+  .nav-hover-effect:hover::before {
+    @apply bg-black/30;
+  }
+
+  @media (max-width: 768px) {
+    .nav-hover-effect::before {
+      @apply hidden;
+    }
+  }
+
+  .select-item-checked::after {
+    content: "✓";
+    @apply ml-3 text-blue-500 font-semibold;
+  }
+}
+
+/* 工具类样式 */
+@layer utilities {
+  .overflow-anchor-none {
+    overflow-anchor: none;
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+}
+
+/* 修改摘要卡片样式 */
+.excerpt-card {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-color: #e9ecef;
+}
+
+/* 优化目录样式 */
+.aside-nav {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+/* 移除锚点默认样式 */
+.markdown-body a {
+  border-bottom: none !important;
+  transition: none !important;
+}
+
+.markdown-body a:hover {
+  text-decoration: none !important;
+}
+
+/* 白天模式样式 */
+.light-mode {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--primary);
+  }
+
+  p, span {
+    color: var(--foreground);
+  }
+
+  a {
+    color: var(--primary);
+  }
+
+  a:hover {
+    color: var(--accent);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #a1a1a1;
+  }
+
+  .rehype-prism {
+    background-color: #f6f8fa;
+    color: var(--foreground);
+  }
+
+  .code-block-wrapper {
+    background-color: #f6f8fa;
+  }
+
+  .code-header {
+    background-color: #f0f0f0;
+  }
+
+  .code-lang {
+    color: #6e7781;
+  }
+
+  .copy-button {
+    border-color: #d0d7de;
+    color: #6e7781;
+  }
+
+  .copy-button:hover {
+    background-color: #d0d7de/20;
+  }
+
+  .markdown-body .mdx-content {
+    pre {
+      background-color: #f6f8fa;
+      color: var(--foreground);
+    }
+
+    code:not(pre code) {
+      background-color: #eaeaea;
+      color: var(--foreground);
+    }
+
+    a {
+      color: var(--primary);
+    }
+
+    a:hover {
+      color: var(--accent);
+    }
+  }
+
+  .excerpt-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    border-color: #e9ecef;
+  }
+
+  .aside-nav {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #e9ecef;
+  }
+}
+
+/* 暗黑模式下的变量覆盖 */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #f5f5f5;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --accent: #17a2b8;
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--primary);
+  }
+
+  p, span {
+    color: var(--foreground);
+  }
+
+  a {
+    color: var(--primary);
+  }
+
+  a:hover {
+    color: var(--accent);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #2d2d2d;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #555;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #777;
+  }
+
+  .rehype-prism {
+    background-color: #2d2d2d;
+    color: #f5f5f5;
+  }
+  .code-block-wrapper {
+    background-color: #2d2d2d;
+  }
+
+  .code-header {
+    background-color: #333;
+  }
+
+  .code-lang {
+    color: #ccc;
+  }
+
+  .copy-button {
+    border-color: #555;
+    color: #ccc;
+  }
+
+  .copy-button:hover {
+    background-color: #444;
+  }
+
+
+  .markdown-body .mdx-content {
+    pre {
+      background-color: #2d2d2d;
+      color: #f5f5f5;
+    }
+
+    code:not(pre code) {
+      background-color: #444;
+      color: #f5f5f5;
+    }
+
+    a {
+      color: var(--primary);
+    }
+
+    a:hover {
+      color: var(--accent);
+    }
+  }
+
+  .excerpt-card {
+    background: linear-gradient(145deg, #2d3748 0%, #1a202c 100%);
+    border-color: #2d3748;
+  }
+
+  .aside-nav {
+    background: rgba(26, 32, 44, 0.95);
+    border-color: #2d3748;
+  }
+}

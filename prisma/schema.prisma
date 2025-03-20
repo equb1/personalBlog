@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id              String         @id @default(uuid())
+  slug            String         @unique
+  title           String
+  content         String
+  excerpt         String?
+  coverImage      String?
+  views           Int            @default(0)
+  isFeatured      Boolean        @default(false)
+  isPublished     Boolean        @default(false)
+  publishedAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  drafts          Json?
+  contentHtml     String?
+  themeConfig     String? // 新增主题配置字段
+  // 关系定义
+  userId          String
+  categoryId      String? // This field is optional
+  user            User           @relation(fields: [userId], references: [id])
+  category        Category?      @relation(fields: [categoryId], references: [id]) // Mark as optional
+  comments        Comment[]
+  tags            Tag[]          @relation("PostTags")
+  postTags        PostTags[]
+  carouselItems   CarouselItem[]
+  status          PostStatus     @default(DRAFT)
+  declineReason   String?
+
+  @@index([slug])
+  @@index([publishedAt])
+}
+
+model Role {
+  id   String @id @default(uuid())
+  name String @unique
+
+  users User[] @relation("UserRoles") // 反向关系字段
+
+  @@index([name])
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isVerified    Boolean   @default(false)
+  verifyToken   String?
+  resetToken    String?
+  tokenExpiry   DateTime?
+
+  // 关系定义
+  posts         Post[]
+  comments      Comment[]
+  activities    Activity[]
+  media         Media[]
+  learningPaths LearningPath[]
+  books         Book[] // 添加反向关系字段
+
+  roles    Role[]    @relation("UserRoles")
+  sessions Session[]
+  accounts Account[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Tag {
+  id       String     @id @default(uuid())
+  name     String     @unique
+  slug     String     @unique
+  posts    Post[]     @relation("PostTags")
+  postTags PostTags[]
+  books    Book[]     @relation("BookTags")
+  bookTags BookTags[] // 添加反向关系字段
+
+  @@index([name])
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  thumbnail   String?
+  sortOrder   Int     @default(0)
+  showInNav   Boolean @default(true)
+  posts       Post[]
+  books       Book[] // 添加反向关系字段
+
+  @@index([sortOrder])
+  @@index([name])
+}
+
+model Comment {
+  id           String   @id @default(uuid())
+  content      String
+  isApproved   Boolean  @default(false)
+  isAdminReply Boolean  @default(false)
+  likedCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 关系定义
+  postId   String
+  userId   String?
+  parentId String?
+  post     Post    @relation(fields: [postId], references: [id])
+  user     User?   @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([isApproved])
+}
+
+model Media {
+  id          String    @id @default(uuid())
+  title       String
+  url         String    @unique
+  type        String
+  cover       String
+  author      String?
+  rating      Float?    @default(0)
+  status      String    @default("pending")
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  fileSize    String?
+  fileType    String?
+  isbn        String?
+  publisher   String?
+  pages       Int?
+
+  // 关系定义
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([type])
+  @@index([rating])
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  type      String
+  content   String?
+  targetId  String
+  createdAt DateTime @default(now())
+
+  // 关系定义
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
+model LearningPath {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  nodes       Json
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系定义
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([title])
+}
+
+model PostTags {
+  postId String
+  tagId  String
+  post   Post   @relation(fields: [postId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
+model Page {
+  id        String   @id @default(uuid())
+  title     String   @unique
+  slug      String   @unique
+  content   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model SiteConfig {
+  id          String  @id @default(uuid())
+  siteName    String  @default("我的博客")
+  description String
+  logo        String?
+  favicon     String?
+  socials     Json?
+}
+
+model FriendLink {
+  id        String  @id @default(uuid())
+  name      String
+  url       String
+  desc      String?
+  logo      String?
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  @@index([sortOrder])
+}
+
+model Subscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true)
+
+  @@index([email])
+}
+
+model VisitLog {
+  id        String   @id @default(uuid())
+  path      String
+  ip        String?
+  country   String?
+  device    String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([createdAt])
+}
+
+model CarouselItem {
+  id        String   @id @default(uuid())
+  title     String
+  imageUrl  String
+  content   String?
+  category  String
+  createdAt DateTime @default(now())
+
+  // 关系定义
+  postId String? @unique
+  post   Post?   @relation(fields: [postId], references: [id])
+
+  @@index([category])
+}
+
+enum PostStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  ARCHIVED
+}
+
+model Session {
+  id           String   @id
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model Account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Book {
+  id              String     @id @default(uuid())
+  title           String
+  author          String
+  coverImage      String?
+  isbn            String?    @unique
+  publisher       String?
+  publishYear     Int?
+  pages           Int?
+  description     String?
+  readingProgress Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  status        String       @default("DRAFT") // 添加状态字段
+  userId          String
+  user            User       @relation(fields: [userId], references: [id])
+  tags            Tag[]      @relation("BookTags")
+  bookTags        BookTags[] // 添加反向关系字段
+  category        Category?  @relation(fields: [categoryId], references: [id])
+  categoryId      String?
+  bookFileUrl  String? // 新增字段
+}
+
+model BookTags {
+  bookId String
+  tagId  String
+  book   Book   @relation(fields: [bookId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([bookId, tagId])
+}
