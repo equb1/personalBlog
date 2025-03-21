@@ -4,13 +4,18 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation"; // 使用 next/navigation
 import { useSession } from "next-auth/react";
-import { Book, Tag } from "@prisma/client";
+import { Book as PrismaBook, Tag } from "@prisma/client";
+
+// 定义包含 tags 属性的 Book 类型
+type BookWithTags = PrismaBook & {
+  tags: Tag[];
+};
 
 export default function EditBookPage() {
   const router = useRouter();
   const pathname = usePathname();
   const id = pathname.split('/').pop(); // 从路径中提取书籍 ID
-  const [book, setBook] = useState<Book | null>(null);
+  const [book, setBook] = useState<BookWithTags | null>(null);
   const { data: session } = useSession(); // 获取当前会话
 
   useEffect(() => {
@@ -21,7 +26,7 @@ export default function EditBookPage() {
         console.error("获取书籍失败");
         return;
       }
-      const data: Book = await res.json();
+      const data: BookWithTags = await res.json();
       setBook(data);
     }
     fetchBook();

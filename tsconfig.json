@@ -43,7 +43,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "components/FooterDataLayer.tsx"
-  ],
+, "next.config.js"  ],
   "exclude": [
     "node_modules"
   ]

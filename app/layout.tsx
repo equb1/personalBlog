@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import ServiceWorker from '@/components/ServiceWorker'; // 引入 ServiceWorker 组件
 import './globals.css'; // 引入全局 CSS 样式文件
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
 
 export const metadata: Metadata = {
   title: "技术博客 | 前沿开发实践",
@@ -35,7 +35,7 @@ export default function RootLayout({
         <link rel="preload" href="/_next/static/chunks/app/layout.js" as="script" />
         <link rel="preload" href="/_next/static/chunks/app/page.js" as="script" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
+      <body className={` antialiased flex flex-col min-h-screen`}>
         <Providers>
           {children}
         </Providers>

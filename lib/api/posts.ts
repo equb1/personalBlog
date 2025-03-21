@@ -52,3 +52,24 @@ export async function updatePost(id: string, data: { title: string; content: str
     return null;
   }
 }
+
+export async function getLatestPosts() {
+  const posts = await prisma.post.findMany({
+      
+      where: {
+          isPublished: true,
+          status: 'PUBLISHED'
+      },
+      include: {
+          user: true,
+          category: true,
+          tags: true
+      },
+      orderBy: {
+          publishedAt: 'desc'
+      },
+      take: 4
+  });
+  console.log('Returned posts:', posts); // 打印返回的文章数据
+  return posts;
+}

@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   pageExtensions: ["ts", "tsx"],
   images: {
     domains: ['ui-avatars.com'], // 添加 ui-avatars.com 到允许的域名列表
@@ -11,7 +9,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   typescript: {
-    ignoreBuildErrors: true, // 添加忽略构建错误的配置
+    // ignoreBuildErrors: true, // 添加忽略构建错误的配置
   },
 };
 
