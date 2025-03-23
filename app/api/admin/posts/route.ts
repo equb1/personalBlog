@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
     // 唯一一次解析请求体
     const payload = await request.json();
-    console.log('服务端收到数据:', JSON.stringify(payload, null, 2));
+    //console.log('服务端收到数据:', JSON.stringify(payload, null, 2));
 
     // 增强字段校验
     const requiredFields = [

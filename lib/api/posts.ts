@@ -70,6 +70,6 @@ export async function getLatestPosts() {
       },
       take: 4
   });
-  console.log('Returned posts:', posts); // 打印返回的文章数据
+  //console.log('Returned posts:', posts); // 打印返回的文章数据
   return posts;
 }

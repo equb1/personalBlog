@@ -85,7 +85,7 @@ export async function PUT(request: Request) {
       include: { category: true, tags: true }
     });
 
-    console.log('数据库更新结果:', JSON.stringify(updatedPost, null, 2));
+    //console.log('数据库更新结果:', JSON.stringify(updatedPost, null, 2));
     return NextResponse.json({ code: 'SUCCESS', data: updatedPost });
 
   } catch (error) {

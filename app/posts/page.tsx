@@ -100,11 +100,7 @@ const PostsPage: React.FC = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex justify-center space-x-4 my-8">
-        {subMenuItems.map((item) => (
-          <Link key={item.route} href={item.route.replace(item.name, convertCategorySlug(item.name))} className="text-blue-600 hover:text-blue-800">{item.name}</Link>
-        ))}
-      </div>
+      
       {isLoading ? (
         <p>Loading...</p>
       ) : (
