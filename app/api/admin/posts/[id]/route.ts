@@ -137,7 +137,7 @@ export async function POST(request: Request) {
     }
 
     const payload = await request.json(); // 唯一一次解析
-    console.log('完整请求数据:', JSON.stringify(payload, null, 2));
+    //console.log('完整请求数据:', JSON.stringify(payload, null, 2));
 
     // 强制校验slug存在性
     if (!payload.slug) {
