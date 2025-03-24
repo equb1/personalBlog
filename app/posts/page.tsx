@@ -23,7 +23,7 @@ const fetchPosts = async (categorySlug: string): Promise<SectionCardData[]> => {
     throw new Error('Base URL is not configured');
   }
 
-  const response = await fetch(`${baseUrl}/api/categories/${categorySlug}/posts`, { cache: 'no-store' });
+  const response = await fetch(`${baseUrl}/api/categories/${categorySlug}/posts`);
   if (!response.ok) {
     throw new Error('Network response was not ok');
   }

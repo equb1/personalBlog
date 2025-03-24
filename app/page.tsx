@@ -79,7 +79,6 @@ const FEATURED_ITEMS: GridCardData[] = [
 
 export default async function Home() {
   const latestPosts = await getLatestPosts();
-  console.log("lastpost", latestPosts);
 
   const sectionItems: SectionCardData[] = latestPosts.map((post) => {
     let categoryName = '未分类';
