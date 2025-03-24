@@ -221,7 +221,7 @@ export async function POST(request: Request) {
         tags: true
       }
     });
-    console.log('数据库写入结果:', JSON.stringify(newPost, null, 2));
+    //console.log('数据库写入结果:', JSON.stringify(newPost, null, 2));
     return NextResponse.json({
       code: 'SUCCESS',
       data: {

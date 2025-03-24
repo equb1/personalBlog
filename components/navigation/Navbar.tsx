@@ -4,7 +4,7 @@
 import { memo, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { FaSun, FaMoon } from 'react-icons/fa';
 import Image from 'next/image'; // 导入 next/image
@@ -202,7 +202,7 @@ const MobileMenuItem = memo(({ item, activeItem, setSubmenuOpen, submenuOpen, ha
               ${isScrolled
                ? 'text-slate-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400'
                 : 'text-white/90 hover:text-cyan-300'}
-              ${activeItem === item.name && 'bg-white/10 dark:bg-gray-700/50'}`}
+              ${activeItem === item.name && 'dark:bg-gray-700/50'}`}
       >
         <span className="text-lg">{item.icon}</span>
         <span className="font-medium">{item.name}</span>
@@ -244,6 +244,7 @@ MobileMenuItem.displayName = 'MobileMenuItem'; // 添加 displayName
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname(); // 获取当前路径
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeItem, setActiveItem] = useState('主页');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -268,6 +269,13 @@ export default function Navbar() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    const currentMenuItem = menuItems.find((item) => pathname.startsWith(item.path));
+    if (currentMenuItem) {
+      setActiveItem(currentMenuItem.name);
+    }
+  }, [pathname]);
 
   const handleNavigation = (path: string) => {
     router.push(path);
@@ -304,7 +312,7 @@ export default function Navbar() {
       .split(' ')
       .map((word) => word[0].toUpperCase())
       .join('');
-    return `https://ui-avatars.com/api/?name=${initials}&background=0D8ABC&color=fff&size=128`;
+    return `https://ui-avatars.com/api/?name=   ${initials}&background=0D8ABC&color=fff&size=128`;
   };
 
   return (
@@ -421,7 +429,7 @@ export default function Navbar() {
             initial={{ x: -300, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
-            className="fixed top-0 left-0 h-full w-64 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-soft z-40"
+            className="fixed top-0 left-0 h-full w-64 dark:bg-gray-900/95 backdrop-blur-lg shadow-soft z-40"
           >
             <ul className="p-4 space-y-2">
               {menuItems.map((item) => (
@@ -442,4 +450,5 @@ export default function Navbar() {
       </AnimatePresence>
     </nav>
   );
+
 }

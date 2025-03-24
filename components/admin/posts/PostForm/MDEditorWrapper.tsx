@@ -64,7 +64,7 @@ config({
 interface MDEditorWrapperProps {
   value: string;
   onChange: (value: string) => void;
-  onHtmlChange?: (html: string, theme: ThemeConfig) => void;
+  onHtmlChange?: (html: string, theme: ThemeConfig) => void; // 用于将 HTML 内容传递给父组件
   initialTheme?: ThemeConfig; // 新增：父组件传递的初始主题
 }
 
@@ -102,13 +102,9 @@ const MDEditorWrapper = ({ value, onChange, onHtmlChange, initialTheme }: MDEdit
     onChange(newValue); // 同步内容变化到父组件
     if (onHtmlChange) {
       const html = md.render(newValue);
-      onHtmlChange(wrapWithTheme(html, theme.preview), theme); // 同步主题配置
+      onHtmlChange(html, theme); // 同步 HTML 内容和主题配置
+      
     }
-  };
-
-  // 包装HTML内容添加主题类
-  const wrapWithTheme = (html: string, themeName: string) => {
-    return `<div class="md-editor-preview-theme-${themeName}">${html}</div>`;
   };
 
   // 图片上传处理

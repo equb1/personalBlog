@@ -29,7 +29,7 @@ export async function GET(request: Request, { params }: { params: { categorySlug
 
     return NextResponse.json(post);
   } catch (error) {
-    console.error('Error fetching post:', error);
+    //console.error('Error fetching post:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

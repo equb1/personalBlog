@@ -8,14 +8,14 @@ export async function GET(request: NextRequest, { params }: { params: { category
     try {
         const { categorySlug } = await params;
         const decodedCategorySlug = decodeURIComponent(categorySlug);
-        console.log('Decoded categorySlug:', decodedCategorySlug);
+        //console.log('Decoded categorySlug:', decodedCategorySlug);
 
         const category = await prisma.category.findUnique({
             where: { slug: decodedCategorySlug },
         });
 
         if (!category) {
-            console.log('Category not found in database for slug:', decodedCategorySlug);
+            //console.log('Category not found in database for slug:', decodedCategorySlug);
             return NextResponse.json({ error: 'Category not found' }, { status: 404 });
         }
 

@@ -81,58 +81,47 @@ button {
 
 /* 代码块样式 */
 .rehype-prism {
-  @apply p-4 rounded-lg my-4;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
 }
 
 .code-block-wrapper {
-  @apply rounded-lg my-4 bg-[#f6f8fa];
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  background-color: #f6f8fa;
 }
 
 .code-header {
-  @apply flex justify-between items-center px-3 py-2 bg-black/5 rounded-t-lg;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem 0.5rem 0 0;
 }
 
 .code-lang {
-  @apply text-[#6e7781] text-sm;
+  color: #6e7781;
+  font-size: 0.875rem;
 }
 
 .copy-button {
-  @apply bg-transparent border border-[#d0d7de] rounded px-2 py-0.5 text-sm cursor-pointer transition-all;
+  background-color: transparent;
+  border: 1px solid #d0d7de;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .copy-button:hover {
-  @apply bg-[#d0d7de]/20;
+  background-color: rgba(208, 215, 222, 0.2);
 }
 
-/* Markdown/MDX 内容样式 */
-.markdown-body .mdx-content {
-  all: inherit;
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply mt-8 mb-4 font-bold;
-  }
 
-  pre {
-    @apply rounded-lg p-4 my-4;
-
-    code {
-      @apply bg-transparent p-0;
-    }
-  }
-
-  code:not(pre code) {
-    @apply px-2 py-1 rounded;
-  }
-
-  a {
-    @apply text-blue-600 dark:text-blue-400 hover:underline;
-  }
-}
 
 /* Markdown 内容被锚点定位时的动画效果 */
 .markdown-body :target {
@@ -248,46 +237,6 @@ button {
     color: var(--foreground);
   }
 
-  .code-block-wrapper {
-    background-color: #f6f8fa;
-  }
-
-  .code-header {
-    background-color: #f0f0f0;
-  }
-
-  .code-lang {
-    color: #6e7781;
-  }
-
-  .copy-button {
-    border-color: #d0d7de;
-    color: #6e7781;
-  }
-
-  .copy-button:hover {
-    background-color: #d0d7de/20;
-  }
-
-  .markdown-body .mdx-content {
-    pre {
-      background-color: #f6f8fa;
-      color: var(--foreground);
-    }
-
-    code:not(pre code) {
-      background-color: #eaeaea;
-      color: var(--foreground);
-    }
-
-    a {
-      color: var(--primary);
-    }
-
-    a:hover {
-      color: var(--accent);
-    }
-  }
 
   .excerpt-card {
     background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
@@ -315,10 +264,6 @@ button {
 
   h1, h2, h3, h4, h5, h6 {
     color: var(--primary);
-  }
-
-  p, span {
-    color: var(--foreground);
   }
 
   a {

@@ -11,7 +11,7 @@ import MDEditorWrapper from './PostForm/MDEditorWrapper';
 import { ActionButtons } from './PostForm/ActionButtons';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Post } from '@prisma/client';
-import sanitize from 'sanitize-html';
+import sanitize, { IFrame } from 'sanitize-html';
 import { ThemeConfig } from '@/types/ThemeConfig';
 import { debounce } from 'lodash';
 interface PostFormProps {
@@ -111,22 +111,16 @@ export const PostForm = ({ initialData, isEditMode = false }: PostFormProps) => 
   const [contentHtml, setContentHtml] = useState(initialData?.contentHtml || '');
   const [themeConfig, setThemeConfig] = useState<string>(initialData?.themeConfig || 'cyanosis');
 
-  // 防抖处理
-  const debouncedUpdateContentHtml = useRef(
-    debounce((html: string) => {
-      setContentHtml(sanitize(html, {
-        allowedTags: sanitize.defaults.allowedTags.concat(['img']),
-        allowedAttributes: {
-          code: ['class'],
-          img: ['src', 'alt', 'width', 'height', 'class'],
-        },
-      }));
-    }, 300)
-  ).current;
+// 处理编辑器内容变化
+const handleEditorChange = (value: string) => {
+  setPost((p) => ({ ...p, content: value }));
+};
 
-  useEffect(() => {
-    return () => debouncedUpdateContentHtml.cancel();
-  }, []);
+// 处理编辑器 HTML 内容变化
+const handleEditorHtmlChange = (html: string, theme: ThemeConfig) => {
+  setContentHtml(html); // 更新 HTML 内容
+  setThemeConfig(theme.preview); // 更新主题配置
+};
 
   useEffect(() => {
     if (isEditMode && initialData) {
@@ -450,13 +444,8 @@ export const PostForm = ({ initialData, isEditMode = false }: PostFormProps) => 
         </label>
         <MDEditorWrapper
           value={post.content || ''}
-          onChange={(value: string) => {
-            setPost((p) => ({ ...p, content: value }));
-          }}
-          onHtmlChange={(html: string, theme: ThemeConfig) => {
-            debouncedUpdateContentHtml(html);
-            setThemeConfig(theme.preview);
-          }}
+          onChange={handleEditorChange}
+          onHtmlChange={handleEditorHtmlChange} // 将 HTML 内容传递给父组件
         />
       </div>
 
