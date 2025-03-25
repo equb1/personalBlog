@@ -1,128 +1,84 @@
-"use client";
-import { useEffect, useState } from 'react';
-import { SectionWrapper } from '@/components/cards-section/SectionWrapper';
-import { SectionCardData, TechCategory, Post, Tag } from '@/types/content';
-import Link from 'next/link';
-import Navbar from '@/components/navigation/Navbar';
-import { formatDate } from '@/lib/utils';
-import convertCategorySlug from '@/lib/convertCategorySlug';
-import Image from 'next/image';
-import LoadingSpinner from '@/components/LoadingSpinner'; // 引入加载组件
-import SkeletonLoader from '@/components/SkeletonLoader'; // 引入骨架屏组件
+import { Post, TechCategory } from '@/types/content';
+import prisma from '@/lib/prisma';
+import PostsClient from './PostsClient';
 
-const subMenuItems = [
-  { name: '学习笔记', route: '/categories/学习笔记/posts' },
-  { name: '笔试面试', route: '/categories/笔试面试/posts' },
-  { name: '项目实践', route: '/categories/项目实践/posts' },
-];
+// 本地类型定义（根据实际调整）
+interface SectionData {
+  [categoryName: string]: {
+    id: string;
+    title: string;
+    description: string;
+    href: string;
+    cover: { src: string; alt: string };
+    metadata: Array<{ label: string; value: string }>;
+  }[];
+}
 
-const PostsPage: React.FC = () => {
-  const [sectionsData, setSectionsData] = useState<Record<string, SectionCardData[]>>({});
-  const [isLoading, setIsLoading] = useState(true);
+export default async function PostsPage() {
+  // 1. 获取所有分类
+  const categories = await prisma.category.findMany({
+    where: { slug: { in: ['learning-notes', 'interviews', 'projects'] } },
+    select: { id: true, name: true, slug: true }
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const categoryPromises = subMenuItems.map(async (item) => {
-          const englishSlug = convertCategorySlug(item.name);
-          console.log('Sending categorySlug:', englishSlug);
-          const response = await fetch(`/api/categories/${englishSlug}/posts`);
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const posts: Post[] = await response.json();
+  // 2. 并行获取每个分类的文章
+  const categoryPosts = await Promise.all(
+    categories.map(async (category) => {
+      const posts = await prisma.post.findMany({
+        where: { categoryId: category.id },
+        select: {
+          id: true,
+          title: true,
+          excerpt: true,
+          content: true,
+          slug: true,
+          coverImage: true,
+          publishedAt: true,
+          createdAt: true,
+          user: { select: { username: true, avatar: true } },
+          tags: { select: { name: true } },
+          category: { select: { name: true, slug: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20
+      });
 
-          const items: SectionCardData[] = posts.map((post) => ({
-            id: post.id,
-            title: post.title,
-            
-            description: post.excerpt || post.content.slice(0, 100) + '...',
-            metaTitle: post.metaTitle || post.title,
-            href: `/posts/${convertCategorySlug(post.category.name)}/${post.slug}`,
-            cover: {
-              src: post.coverImage || '/default-article.jpg',
-              alt: post.title,
-            },
-            techStack: post.tags.map((tag: Tag) => ({
-              name: tag.name,
-              proficiency: 80,
-              category: TechCategory.TAG
-            })),
-            techCategories: [TechCategory.TAG],
-            metadata: [
-              {
-                label: '作者',
-                value: post.user.username,
-                icon: post.user.avatar ? (
-                  <Image
-                    src={post.user.avatar}
-                    className="w-4 h-4 rounded-full"
-                    alt={post.user.username}
-                    width={16}
-                    height={16}
-                  />
-                ) : null,
-                href: `/user/${post.user.username}`
-              },
-              {
-                label: '分类',
-                value: post.category?.name || '未分类',
-                href: post.category ? `/category/${convertCategorySlug(post.category.slug)}` : '#'
-              },
-              {
-                label: '发布日期',
-                value: formatDate(post.publishedAt || post.createdAt)
-              }
-            ]
-          }));
-
-          return {
-            categoryName: item.name,
-            items
-          };
-        });
-
-        const results = await Promise.all(categoryPromises);
-
-        const newSectionsData = results.reduce((acc, result) => {
-          acc[result.categoryName] = result.items;
-          return acc;
-        }, {} as Record<string, SectionCardData[]>);
-
-        setSectionsData(newSectionsData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return (
-    <div>
-      <Navbar />
-      
-      {isLoading ? (
-        // 使用加载组件
-        <LoadingSpinner />
-        // 或者使用骨架屏
-        // <SkeletonLoader />
-      ) : (
-        <SectionWrapper
-          sections={Object.entries(sectionsData).map(([categoryName, items]) => ({
-            title: categoryName,
-            route: `/categories/${convertCategorySlug(categoryName)}/posts`,
-            items: items.map(item => ({
-              ...item,
-              _hoverTitle: item.metaTitle
-            }))
-          }))}
-        />
-      )}
-    </div>
+      return { category, posts };
+    })
   );
-};
 
-export default PostsPage;
+// 在服务端组件中添加 techCategories 转换
+const sectionsData: SectionData = {};
+categoryPosts.forEach(({ category, posts }) => {
+  sectionsData[category.name] = posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    description: post.excerpt || post.content.slice(0, 100) + '...',
+    href: `/posts/${category.slug}/${post.slug}`,
+    cover: {
+      src: post.coverImage || '/default-article.jpg',
+      alt: post.title
+    },
+    techStack: post.tags.map(tag => ({
+      name: tag.name,
+      proficiency: 80,
+      category: TechCategory.TAG
+    })),
+    techCategories: [TechCategory.TAG], // 添加缺失的字段
+    metadata: [
+      {
+        label: '作者',
+        value: post.user.username,
+        icon: post.user.avatar ? '[AVATAR]' : null
+      },
+      { label: '分类', value: category.name },
+      { 
+        label: '发布日期', 
+        value: new Date(post.publishedAt || post.createdAt).toLocaleDateString() 
+      }
+    ]
+  }));
+});
+
+  return <PostsClient initialData={sectionsData} />;
+}
