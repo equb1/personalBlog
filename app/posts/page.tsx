@@ -2,16 +2,25 @@ import { Post, TechCategory } from '@/types/content';
 import prisma from '@/lib/prisma';
 import PostsClient from './PostsClient';
 
-// 本地类型定义（根据实际调整）
-interface SectionData {
-  [categoryName: string]: {
-    id: string;
-    title: string;
-    description: string;
-    href: string;
-    cover: { src: string; alt: string };
-    metadata: Array<{ label: string; value: string }>;
+// 更新本地类型定义以匹配 PostsClient 的期望
+interface PostItem {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  cover: { src: string; alt: string };
+  techCategories: TechCategory[];
+  techStack?: {
+    name: string;
+    proficiency: number;
+    category: TechCategory;
   }[];
+  metadata: Array<{ label: string; value: string; icon?: string | null }>;
+  categorySlug: string; // 添加这个必填字段
+}
+
+interface SectionData {
+  [categoryName: string]: PostItem[];
 }
 
 export default async function PostsPage() {
@@ -47,38 +56,39 @@ export default async function PostsPage() {
     })
   );
 
-// 在服务端组件中添加 techCategories 转换
-const sectionsData: SectionData = {};
-categoryPosts.forEach(({ category, posts }) => {
-  sectionsData[category.name] = posts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    description: post.excerpt || post.content.slice(0, 100) + '...',
-    href: `/posts/${category.slug}/${post.slug}`,
-    cover: {
-      src: post.coverImage || '/default-article.jpg',
-      alt: post.title
-    },
-    techStack: post.tags.map(tag => ({
-      name: tag.name,
-      proficiency: 80,
-      category: TechCategory.TAG
-    })),
-    techCategories: [TechCategory.TAG], // 添加缺失的字段
-    metadata: [
-      {
-        label: '作者',
-        value: post.user.username,
-        icon: post.user.avatar ? '[AVATAR]' : null
+  // 构建符合类型要求的数据
+  const sectionsData: SectionData = {};
+  categoryPosts.forEach(({ category, posts }) => {
+    sectionsData[category.name] = posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      description: post.excerpt || post.content.slice(0, 100) + '...',
+      href: `/posts/${category.slug}/${post.slug}`,
+      cover: {
+        src: post.coverImage || '/default-article.jpg',
+        alt: post.title
       },
-      { label: '分类', value: category.name },
-      { 
-        label: '发布日期', 
-        value: new Date(post.publishedAt || post.createdAt).toLocaleDateString() 
-      }
-    ]
-  }));
-});
+      techStack: post.tags.map(tag => ({
+        name: tag.name,
+        proficiency: 80,
+        category: TechCategory.TAG
+      })),
+      techCategories: [TechCategory.TAG],
+      metadata: [
+        {
+          label: '作者',
+          value: post.user.username,
+          icon: post.user.avatar ? '[AVATAR]' : null
+        },
+        { label: '分类', value: category.name },
+        { 
+          label: '发布日期', 
+          value: new Date(post.publishedAt || post.createdAt).toLocaleDateString() 
+        }
+      ],
+      categorySlug: category.slug // 添加缺失的 categorySlug
+    }));
+  });
 
   return <PostsClient initialData={sectionsData} />;
 }

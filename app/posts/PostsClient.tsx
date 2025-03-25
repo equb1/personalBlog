@@ -12,8 +12,8 @@ interface PostsClientProps {
       description: string;
       href: string;
       cover: { src: string; alt: string };
-      techCategories?: TechCategory[]; // 添加可选字段
-      techStack?: {      // 如果需要也添加
+      techCategories?: TechCategory[];
+      techStack?: {
         name: string;
         proficiency: number;
         category: TechCategory;
@@ -23,8 +23,10 @@ interface PostsClientProps {
         value: string;
         icon?: string | null;
       }>;
+      // 添加 categorySlug 字段
+      categorySlug: string;
     }>>;
-  }
+}
 
 export default function PostsClient({ initialData }: PostsClientProps) {
     const [sectionsData] = useState(initialData);
@@ -35,10 +37,11 @@ export default function PostsClient({ initialData }: PostsClientProps) {
         <SectionWrapper
           sections={Object.entries(sectionsData).map(([categoryName, items]) => ({
             title: categoryName,
-            route: `/categories/${categoryName.toLowerCase().replace(/\s+/g, '-')}/posts`,
+            // 使用从数据中获取的 categorySlug 而不是手动生成
+            route: `/posts/${items[0]?.categorySlug || 'default'}`,
             items: items.map(item => ({
               ...item,
-              techCategories: item.techCategories || [TechCategory.TAG], // 确保存在
+              techCategories: item.techCategories || [TechCategory.TAG],
               metadata: item.metadata.map(meta => ({
                 ...meta,
                 icon: meta.icon === '[AVATAR]' ? (
@@ -56,4 +59,4 @@ export default function PostsClient({ initialData }: PostsClientProps) {
         />
       </div>
     );
-  }
+}
