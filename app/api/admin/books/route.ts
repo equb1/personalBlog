@@ -93,7 +93,11 @@ export async function PUT(request: NextRequest) {
 export async function GET() {
   try {
     const books = await prisma.book.findMany();
-    return NextResponse.json(books);
+    return NextResponse.json(books, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+      }
+    });
   } catch (error) {
     console.error('获取书籍数据失败:', error);
     return NextResponse.json({ error: '获取书籍数据失败' }, { status: 500 });

@@ -41,23 +41,68 @@ export async function getCarouselPosts() {
 }
 
 export async function getLatestPosts() {
-  const posts = await prisma.post.findMany({
+  return await prisma.post.findMany({
     where: { 
       isPublished: true,
       status: 'PUBLISHED'
     },
-    include: {
-      user: true,
-      category: true,
-      tags: true
+    select: {
+      id: true,
+      title: true,
+      excerpt: true,
+      content: true,
+      slug: true,
+      coverImage: true,
+      metaTitle: true,
+      publishedAt: true,
+      createdAt: true,
+      user: {
+        select: {
+          username: true,
+          avatar: true
+        }
+      },
+      category: {
+        select: {
+          name: true,
+          slug: true
+        }
+      },
+      tags: {
+        select: {
+          name: true
+        }
+      }
     },
     orderBy: {
       publishedAt: 'desc'
     },
-    take: 4
-  });
-  return posts;
+    take: 6 // 获取6篇最新文章
+  })
 }
+
+// export async function getFeaturedPosts() {
+//   return await prisma.post.findMany({
+//     where: {
+//       isPublished: true,
+//       status: 'PUBLISHED',
+//       isFeatured: true
+//     },
+//     select: {
+//       id: true,
+//       title: true,
+//       summary: true,
+//       difficulty: true,
+//       coverImage: true,
+//       tags: {
+//         select: {
+//           name: true
+//         }
+//       }
+//     },
+//     take: 2 // 获取2篇精选文章
+//   })
+// }
 
 export async function getPostBySlug(slug: string) {
   return await prisma.post.findUnique({
