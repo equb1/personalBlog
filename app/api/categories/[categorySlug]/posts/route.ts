@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // 改用全局共享的 Prisma 实例
+import prisma from '@/lib/prisma';
 
 export async function GET(
   request: Request,
   { params }: { params: { categorySlug: string } }
 ) {
   try {
-    const { categorySlug } = params; // 直接解构，无需 await
+    const { categorySlug } = params;
     const decodedSlug = decodeURIComponent(categorySlug);
 
     const category = await prisma.category.findUnique({
@@ -25,7 +25,11 @@ export async function GET(
       include: { user: true, category: true, tags: true },
     });
 
-    return NextResponse.json(posts);
+    return NextResponse.json(posts, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+      }
+    });
   } catch (error) {
     console.error('Error in API route:', error);
     return NextResponse.json(

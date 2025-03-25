@@ -202,7 +202,11 @@ export async function PUT(request: Request) {
 
 export async function GET() {
   const posts = await prisma.post.findMany();
-  return NextResponse.json({ posts });
+  return NextResponse.json({ posts }, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+    }
+  });
 }
 // 删除文章
 export async function DELETE(request: Request) {
