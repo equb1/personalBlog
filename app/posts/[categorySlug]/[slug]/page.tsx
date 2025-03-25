@@ -10,22 +10,22 @@ import Image from 'next/image';
 import prisma from '@/lib/prisma';
 import { useMemo } from 'react';
 
-export async function generateMetadata({ params }: { params: { categorySlug: string; slug: string } }) {
-    const post = await prisma.post.findFirst({
-        where: {
-            slug: params.slug,
-            category: { slug: params.categorySlug }
-        },
-        select: { title: true, excerpt: true },
-    });
+// export async function generateMetadata({ params }: { params: { categorySlug: string; slug: string } }) {
+//     const post = await prisma.post.findFirst({
+//         where: {
+//             slug: params.slug,
+//             category: { slug: params.categorySlug }
+//         },
+//         select: { title: true, excerpt: true },
+//     });
 
-    if (!post) return {};
+//     if (!post) return {};
 
-    return {
-        title: post.title,
-        description: post.excerpt,
-    };
-}
+//     return {
+//         title: post.title,
+//         description: post.excerpt,
+//     };
+// }
 
 // 清理重复代码块的工具函数
 function cleanDuplicateCodeBlocks(content: string): string {
@@ -78,7 +78,7 @@ const PostPage: React.FC<{ params: { categorySlug: string; slug: string } }> = a
         console.error('Cache error:', e);
         return null;
     });
-    
+    console.log("post", post);
     const headings = cacheData?.headings || [];
     const rawContent = cacheData?.contentHtml || post?.contentHtml || '';
 
