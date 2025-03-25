@@ -49,7 +49,7 @@ const PostPage: React.FC<{ params: { categorySlug: string; slug: string } }> = a
         },
         include: { user: { select: { username: true, avatar: true } } },
     });
-
+    console.log('当前 post:', post);
     if (!post) {
         console.log('未找到文章，categorySlug:', params.categorySlug, 'slug:', params.slug);
         notFound();
