@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import Navbar from '@/components/navigation/Navbar';
 
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic'; // 关闭静态优化
 
 async function getBooks() {
   try {
-    const prisma = new PrismaClient();
+    
     return await prisma.book.findMany({
       include: { user: true, tags: true, category: true }
     });

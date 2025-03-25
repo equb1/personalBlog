@@ -8,8 +8,7 @@ import { getCachedHeadings } from '@/lib/cache';
 import MobileTOC from '@/components/MobileTOC';
 import ScrollToTop from '@/components/ScrollToTop';
 import Image from 'next/image'; // 引入 next/image
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 // interface Post {
 //     id: string;

@@ -1,10 +1,8 @@
 // lib/cache.ts
 import { createClient } from 'redis';
-import { PrismaClient } from '@prisma/client';
 import * as cheerio from 'cheerio';
 import { Heading } from '@/types';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 const redis = createClient({ url: process.env.REDIS_URL });
 
 redis.connect().catch((err) => {
