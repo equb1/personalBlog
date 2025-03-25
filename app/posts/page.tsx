@@ -35,6 +35,7 @@ const PostsPage: React.FC = () => {
           const items: SectionCardData[] = posts.map((post) => ({
             id: post.id,
             title: post.title,
+            
             description: post.excerpt || post.content.slice(0, 100) + '...',
             metaTitle: post.metaTitle || post.title,
             href: `/posts/${convertCategorySlug(post.category.name)}/${post.slug}`,

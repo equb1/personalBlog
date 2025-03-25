@@ -1,117 +1,132 @@
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
+import dynamic from 'next/dynamic';
 import { PrismaClient } from '@prisma/client';
 import PostContent from '@/components/PostContent';
-import LazyTOC from '@/components/LazyTOC';
 import ExcerptCard from '@/components/ExcerptCard';
 import Navbar from '@/components/navigation/Navbar';
 import { getCachedHeadings } from '@/lib/cache';
-import MobileTOC from '@/components/MobileTOC';
 import ScrollToTop from '@/components/ScrollToTop';
-import Image from 'next/image'; // 引入 next/image
+import Image from 'next/image';
 
 const prisma = new PrismaClient();
 
-// interface Post {
-//     id: string;
-//     title: string;
-//     contentHtml: string;
-//     themeConfig?: string;
-//     user: { username: string; avatar?: string };
-//     publishedAt?: Date;
-//     createdAt: Date;
-//     excerpt?: string;
-//     slug: string;
-// }
+// 类型安全的数据获取
+const getPostData = cache(async (slug: string, categorySlug: string) => {
+  const [post, cacheData] = await Promise.all([
+    prisma.post.findFirst({
+      where: {
+        slug,
+        category: { slug: categorySlug },
+        isPublished: true,
+        status: 'PUBLISHED'
+      },
+      include: { 
+        user: { select: { username: true, avatar: true } },
+        category: { select: { slug: true } }
+      },
+    }),
+    getCachedHeadings(slug)
+  ]);
 
-export async function generateMetadata({ params }: { params: { categorySlug: string; slug: string } }) {
-    const post = await prisma.post.findFirst({
-        where: {
-            slug: params.slug,
-            category: { slug: params.categorySlug }
-        },
-        select: { title: true, excerpt: true },
-    });
+  return { 
+    post,
+    contentHtml: cacheData?.contentHtml ?? post?.contentHtml ?? '',
+    headings: cacheData?.headings ?? []
+  };
+});
 
-    if (!post) return {};
+// 动态加载组件
+const LazyTOC = dynamic(() => import('@/components/LazyTOC'), {
+  ssr: false,
+  loading: () => <div className="w-64 h-64 bg-gray-100 animate-pulse rounded" />
+});
 
-    return {
-        title: post.title,
-        description: post.excerpt,
-    };
+const MobileTOC = dynamic(() => import('@/components/MobileTOC'), { ssr: false });
+
+// 静态生成配置
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const popularPosts = await prisma.post.findMany({
+    where: { 
+      isPublished: true,
+      status: 'PUBLISHED',
+      category: { isNot: null },
+      views: { gt: 100 }
+    },
+    select: { 
+      slug: true,
+      category: { select: { slug: true } } 
+    },
+    take: 50,
+    orderBy: { views: 'desc' }
+  });
+
+  return popularPosts.map(post => ({
+    categorySlug: post.category!.slug,
+    slug: post.slug
+  }));
 }
 
-const PostPage: React.FC<{ params: { categorySlug: string; slug: string } }> = async ({ params }) => {
-    console.log('当前 categorySlug:', params.categorySlug, '当前 slug:', params.slug);
+export async function generateMetadata({ params }: { params: { categorySlug: string; slug: string } }) {
+  const { post } = await getPostData(params.slug, params.categorySlug);
+  return post ? { 
+    title: post.title, 
+    description: post.excerpt ?? undefined 
+  } : {};
+}
 
-    const post = await prisma.post.findFirst({
-        where: {
-            slug: params.slug,
-            category: { slug: params.categorySlug }
-        },
-        include: { user: { select: { username: true, avatar: true } } },
-    });
+export default async function PostPage({ params }: { params: { categorySlug: string; slug: string } }) {
+  const { post, contentHtml, headings } = await getPostData(params.slug, params.categorySlug);
+  if (!post) notFound();
 
-    if (!post) {
-        console.log('未找到文章，categorySlug:', params.categorySlug, 'slug:', params.slug);
-        notFound();
-    }
+  return (
+    <div className="min-h-screen dark:bg-gray-900">
+      <Navbar />
+      
+      <div className="container mx-auto px-4 py-8 mt-16">
+        <div className="lg:flex lg:gap-8">
+          <article className="lg:flex-1 rounded-lg shadow-sm p-8">
+            <header className="mb-12 text-center">
+              <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-gray-100">
+                {post.title}
+              </h1>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                {post.user.avatar && (
+                  <Image
+                    src={post.user.avatar}
+                    priority
+                    className="w-8 h-8 rounded-full"
+                    alt={post.user.username}
+                    width={32}
+                    height={32}
+                  />
+                )}
+                <span>{post.user.username}</span>
+                <span>•</span>
+                <time>
+                  {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
+                </time>
+              </div>
+            </header>
 
-    // 使用缓存获取目录和更新后的 contentHtml
-    const cacheData = await getCachedHeadings(params.slug);
-    const headings = cacheData?.headings || [];
-    const contentHtml = cacheData?.contentHtml || post?.contentHtml || '';
+            {post.excerpt && <ExcerptCard excerpt={post.excerpt} />}
 
-    console.log('获取到的目录数据:', headings);
+            <PostContent 
+              contentHtml={contentHtml} 
+              theme={post.themeConfig ?? 'cyanosis'} 
+            />
+          </article>
 
-    return (
-        <div className="min-h-screen  dark:bg-gray-900">
-            <Navbar />
-            <div className="container mx-auto px-4 py-8 mt-16">
-                <div className="lg:flex lg:gap-8">
-                    {/* 文章内容 */}
-                    <article className="lg:flex-1   rounded-lg shadow-sm p-8">
-                        <div className="mb-12 text-center">
-                            <h1 className="text-4xl font-bold mb-6 text-gray-800 dark:text-gray-100">
-                                {post?.title}
-                            </h1>
-                            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                                <div className="flex items-center gap-2">
-                                    {post?.user.avatar && (
-                                        <Image
-                                            src={post.user.avatar}
-                                            className="w-8 h-8 rounded-full"
-                                            alt={post.user.username}
-                                            width={32}
-                                            height={32}
-                                        />
-                                    )}
-                                    <span>{post?.user.username}</span>
-                                </div>
-                                <span>•</span>
-                                <time>
-                                    {new Date(post?.publishedAt || post?.createdAt || new Date()).toLocaleDateString()}
-                                </time>
-                            </div>
-                        </div>
-
-                        {post?.excerpt && <ExcerptCard excerpt={post.excerpt} />}
-
-                        <PostContent contentHtml={contentHtml} theme={post?.themeConfig || 'cyanosis'} />
-                    </article>
-
-                    {/* 目录导航 */}
-                    <aside className="hidden lg:block lg:w-64 xl:w-80 lg:sticky lg:top-20 lg:self-start">
-                        {headings && <LazyTOC headings={headings} />}
-                    </aside>
-                </div>
-            </div>
-            {/* 移动端目录入口 */}
-            <MobileTOC headings={headings} />
-
-            {/* 返回顶部按钮 */}
-            <ScrollToTop />
+          <aside className="hidden lg:block lg:w-64 xl:w-80 lg:sticky lg:top-20 lg:self-start">
+            <LazyTOC headings={headings} />
+          </aside>
         </div>
-    );
-};
+      </div>
 
-export default PostPage;
+      <MobileTOC headings={headings} />
+      <ScrollToTop />
+    </div>
+  );
+}

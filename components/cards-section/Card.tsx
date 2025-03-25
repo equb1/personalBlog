@@ -1,35 +1,38 @@
 'use client';
 
 import { SectionCardData } from '@/types/content';
-import { TechCategory } from '@/types/techCategory';
 import { CalendarIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-// 定义 Metadata 类型
 interface Metadata {
   label: string;
   value: string;
 }
 
-// 提取查找元数据的公共函数
 const findMetadataValue = (metadata: Metadata[], label: string) => {
   return metadata.find((m) => m.label === label)?.value;
 };
 
 interface Props {
   data: SectionCardData;
-  techCategories?: TechCategory[];
 }
 
-export const Card = ({ data, techCategories = [] }: Props) => {
+export const Card = ({ data }: Props) => {
+  // 从 techStack 获取标签数据
+  const tags = data.techStack?.map(tech => ({
+    id: tech.name, // 使用name作为临时ID
+    name: tech.name,
+    slug: tech.name.toLowerCase().replace(/\s+/g, '-') // 生成slug
+  })) || [];
+
   return (
     <Link
-      href={data.href} // 使用 Link 包裹整个卡片
+      href={data.href}
       className="block group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-3 focus:ring-blue-400"
       title={data.metaTitle}
     >
-      {/* 卡片内容 */}
+      {/* 封面图片 */}
       <div className="relative aspect-video bg-gray-100 overflow-hidden">
         {data.cover?.src && (
           <Image
@@ -58,17 +61,22 @@ export const Card = ({ data, techCategories = [] }: Props) => {
           </p>
         </div>
 
-        {techCategories.length > 0 && (
+        {/* 修改后的标签展示部分 - 使用 techStack 数据 */}
+        {tags.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {techCategories.map((category) => (
-              <span
-                key={category}
-                className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full shadow-sm"
+            {tags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/tags/${tag.slug}`}
+                className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full shadow-sm hover:bg-blue-200 transition-colors"
+                onClick={(e) => e.stopPropagation()}
               >
-                {category}
-              </span>
+                {tag.name}
+              </Link>
             ))}
           </div>
+        ) : (
+          <div className="text-xs text-gray-400">暂无标签</div>
         )}
 
         <div className="flex items-center text-sm text-gray-500">

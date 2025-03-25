@@ -6,29 +6,38 @@ import Navbar from '@/components/navigation/Navbar';
 
 const prisma = new PrismaClient();
 
-export default async function BooksPage() {
-    const books = await prisma.book.findMany({
-        include: {
-            user: true,
-            tags: true,
-            category: true,
-        },
-    });
+export const dynamic = 'force-dynamic'; // 关闭静态优化
 
-    return (
-        <div className="bg-wood-pattern min-h-screen p-4">
-            <Navbar />
-            <div className="max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {books.map((book) => (
-                        <BookCard key={book.id} book={book} />
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
+async function getBooks() {
+  try {
+    const prisma = new PrismaClient();
+    return await prisma.book.findMany({
+      include: { user: true, tags: true, category: true }
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    return [];
+  }
 }
 
+export default async function BooksPage() {
+  const books = await getBooks();
+  
+  return (
+    <div className="bg-wood-pattern min-h-screen p-4">
+      <Navbar />
+      {books.length === 0 ? (
+        <div className="text-center py-10">暂无书籍数据</div>
+      ) : (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 function BookCard({ book }: { book: Book }) {
     return (
         <div className="relative bg-white shadow-md rounded-lg overflow-hidden">

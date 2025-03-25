@@ -1,7 +1,7 @@
 // PostList.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -22,9 +22,9 @@ interface Post {
 }
 
 export default function PostList() {
-  const [columns, setColumns] = useState<Column[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 定义 handleDelete 函数
   const handleDelete = useCallback(async (postId: string) => {
@@ -35,49 +35,57 @@ export default function PostList() {
           method: "DELETE",
         });
         if (res.ok) {
-          // 重新获取文章数据
           await fetchPosts();
         } else {
-          console.error("删除文章失败");
+          throw new Error("删除文章失败");
         }
       } catch (error) {
         console.error("删除文章失败:", error);
+        setError("删除文章失败，请重试");
       }
     }
   }, []);
 
   // 获取文章数据
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
+      setLoading(true);
       const postsResponse = await fetch("/api/admin/posts");
       if (!postsResponse.ok) {
         throw new Error("获取文章数据失败");
       }
       const { posts } = await postsResponse.json();
-      setPosts(posts);
+      setPosts(Array.isArray(posts) ? posts : []);
+      setError(null);
     } catch (error) {
       console.error("获取文章数据失败:", error);
+      setError("获取文章数据失败，请刷新重试");
+      setPosts([]);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  // 使用 useMemo 缓存 columns 配置
+  const columns = useMemo(() => {
+    return getColumns(handleDelete) as Column[];
+  }, [handleDelete]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await fetchPosts(); // 获取文章数据
-        const columns = getColumns(handleDelete) as Column[];
-        setColumns(columns); // 设置表格列数据
-      } catch (error) {
-        console.error("获取数据失败:", error);
-      } finally {
-        setLoading(false); // 数据加载完成
-      }
-    };
-
-    fetchData();
-  }, [handleDelete]); // 添加 handleDelete 到依赖数组
+    fetchPosts();
+  }, [fetchPosts]);
 
   if (loading) {
-    return <div>加载中...</div>; // 显示加载状态
+    return <div className="p-6">加载中...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 space-y-4">
+        <div className="text-red-500">{error}</div>
+        <Button onClick={fetchPosts}>重试</Button>
+      </div>
+    );
   }
 
   return (
@@ -88,22 +96,18 @@ export default function PostList() {
           <Link href="/admin/posts/edit/new">新建文章</Link>
         </Button>
       </div>
-      {/* 等待 columns 数据加载完再渲染 DataTable */}
-      {columns.length > 0 ? (
-        <DataTable 
-          columns={columns} // 动态加载的 columns
-          data={posts}
-          searchKey="title"
-          filters={[
-            { label: "草稿", value: "DRAFT" },
-            { label: "待审核", value: "PENDING" },
-            { label: "已发布", value: "PUBLISHED" }
-          ]}
-          onDelete={handleDelete}
-        />
-      ) : (
-        <div>未找到列数据</div> // 处理列数据为空的情况
-      )}
+      
+      <DataTable 
+        columns={columns}
+        data={posts}
+        searchKey="title"
+        filters={[
+          { label: "草稿", value: "DRAFT" },
+          { label: "待审核", value: "PENDING" },
+          { label: "已发布", value: "PUBLISHED" }
+        ]}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

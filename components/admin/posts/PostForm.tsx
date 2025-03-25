@@ -14,6 +14,8 @@ import { Post } from '@prisma/client';
 import sanitize, { IFrame } from 'sanitize-html';
 import { ThemeConfig } from '@/types/ThemeConfig';
 import { debounce } from 'lodash';
+import { TagSelect } from '@/components/admin/TagSelect';
+
 interface PostFormProps {
   initialData?: Partial<PostWithTags>;
   isEditMode?: boolean;
@@ -96,8 +98,8 @@ export const PostForm = ({ initialData, isEditMode = false }: PostFormProps) => 
     isPublished: false,
     coverImage: '',
     categoryId: '',
-    tags: [],
-    ...initialData,
+    tagIds: initialData?.tags?.map(tag => tag.id) || [], // 新增
+  ...initialData,
   });
 
   const [isExcerptManuallyModified, setIsExcerptManuallyModified] = useState(
@@ -110,6 +112,13 @@ export const PostForm = ({ initialData, isEditMode = false }: PostFormProps) => 
 
   const [contentHtml, setContentHtml] = useState(initialData?.contentHtml || '');
   const [themeConfig, setThemeConfig] = useState<string>(initialData?.themeConfig || 'cyanosis');
+
+  const handleTagsChange = (tagIds: string[]) => {
+    setPost(prev => ({
+      ...prev,
+      tagIds: tagIds.slice(0, 5) // 限制最多5个标签
+    }));
+  };
 
 // 处理编辑器内容变化
 const handleEditorChange = (value: string) => {
@@ -223,6 +232,7 @@ const handleEditorHtmlChange = (html: string, theme: ThemeConfig) => {
         metaTitle: post.metaTitle || post.title,
         metaDescription: post.metaDescription || post.excerpt,
         excerpt: post.excerpt,
+        tagIds: post.tagIds || [], // 确保包含 tagIds
       };
 
       // 拼接完整链接
@@ -405,6 +415,13 @@ const handleEditorHtmlChange = (html: string, theme: ThemeConfig) => {
               onChange={(value: string) => setPost((p) => ({ ...p, categoryId: value }))}
             />
           </div>
+
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <TagSelect 
+            value={post.tagIds || []}
+            onChange={handleTagsChange}
+          />
+        </div>
 
           {/* 封面图片区块 */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

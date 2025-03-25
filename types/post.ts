@@ -1,6 +1,4 @@
-import { PostTags } from "@prisma/client"
-
-import { Tag, PostStatus } from "@prisma/client";
+import { PostTags, Tag, PostStatus } from "@prisma/client";
 
 export type PostWithTags = {
   id: string;
@@ -18,13 +16,14 @@ export type PostWithTags = {
   metaTitle: string | null;
   metaDescription: string | null;
   keywords: string | null;
-  drafts: any; // 根据你的实际类型调整
+  drafts: any;
   userId: string;
   categoryId: string;
   status: PostStatus;
   declineReason: string | null;
-  tags: Tag[]; // 明确声明 tags 属性
+  tags: Tag[];
   contentHtml: string | null;
-  themeConfig:  string | null;
+  themeConfig: string | null;
+  // 添加 tagIds 作为可选属性
+  tagIds?: string[];
 };
-  

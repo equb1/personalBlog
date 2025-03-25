@@ -2,13 +2,18 @@
 import { StaticImport } from 'next/dist/shared/lib/get-img-props'
 import { TechCategory } from './techCategory'
 import { ReactNode } from 'react'
-
+export interface Tag {
+  id: string | number;
+  name: string;
+  slug: string;
+}
 // 🌟 Core Unified Interface 🌟
 export interface BaseContent {
   id: string | number
   title: string
   summary?: string
   isFeatured?:boolean,
+  tags?: Tag[]; // 修改为 tags 数组
   cover?: {
     src: string | StaticImport
     alt: string

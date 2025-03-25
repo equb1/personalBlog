@@ -3,134 +3,102 @@ import React, { useEffect, useState, useRef } from 'react';
 
 interface PostContentProps {
   contentHtml: string;
-  theme: string;
+  theme?: string;
 }
 
-const PostContent: React.FC<PostContentProps> = ({ contentHtml }) => {
+const PostContent: React.FC<PostContentProps> = ({ contentHtml, theme = 'cyanosis' }) => {
   const [modifiedHtml, setModifiedHtml] = useState(contentHtml);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // 处理代码块结构和答案切换
   useEffect(() => {
-    const addCodeBlockStructure = (html: string): string => {
-      const preRegex = /<pre[^>]*>.*?<\/pre>/gs;
+    if (!contentHtml) {
+      setModifiedHtml('<p>内容加载中...</p>');
+      return;
+    }
 
-      return html.replace(preRegex, (match) => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(match, 'text/html');
+    const processHtml = (html: string) => {
+      // 处理代码块
+      const withCodeBlocks = html.replace(/<pre[^>]*>.*?<\/pre>/gs, (match) => {
+        const doc = new DOMParser().parseFromString(match, 'text/html');
         const pre = doc.querySelector('pre');
         if (!pre) return match;
 
         const code = pre.querySelector('code');
-        if (!code) return match;
+        const lang = code?.className.match(/language-(\w+)/)?.[1] || 'text';
 
-        const langMatch = code.className.match(/language-(\w+)/);
-        const lang = langMatch ? langMatch[1] : 'unknown';
-
-        const codeHeader = doc.createElement('div');
-        codeHeader.className = 'code-header';
-
-        const codeLang = doc.createElement('span');
-        codeLang.className = 'code-lang';
-        codeLang.textContent = lang;
-
-        const copyButton = doc.createElement('button');
-        copyButton.className = 'copy-button';
-        copyButton.textContent = 'Copy';
-
-        codeHeader.appendChild(codeLang);
-        codeHeader.appendChild(copyButton);
-
-        const codeBlockWrapper = doc.createElement('div');
-        codeBlockWrapper.className = 'code-block-wrapper';
-        codeBlockWrapper.appendChild(codeHeader);
-        codeBlockWrapper.appendChild(pre);
-
-        return codeBlockWrapper.outerHTML;
+        return `
+          <div class="code-block-wrapper ${theme}">
+            <div class="code-header">
+              <span class="code-lang">${lang}</span>
+              <button class="copy-button">Copy</button>
+            </div>
+            ${pre.outerHTML}
+          </div>
+        `;
       });
+
+      // 处理答案区块
+      return withCodeBlocks.replace(
+        /<!--answer-->(.*?)<!--\/answer-->/gs, 
+        (_, content) => `
+          <div class="answer-container ${theme}">
+            <button class="toggle-answer-button">显示答案</button>
+            <div class="answer-content" style="display:none">
+              ${content}
+            </div>
+          </div>
+        `
+      );
     };
 
-    const addAnswerToggle = (html: string): string => {
-      const answerRegex = /<!--answer-->(.*?)<!--\/answer-->/gs;
+    setModifiedHtml(processHtml(contentHtml));
+  }, [contentHtml, theme]);
 
-      return html.replace(answerRegex, (match, content) => {
-        const answerContainer = document.createElement('div');
-        answerContainer.className = 'answer-container';
-
-        const toggleButton = document.createElement('button');
-        toggleButton.className = 'toggle-answer-button';
-        toggleButton.textContent = '显示答案';
-
-        const answerContent = document.createElement('div');
-        answerContent.className = 'answer-content';
-        answerContent.innerHTML = content;
-        answerContent.style.display = 'none';
-
-        answerContainer.appendChild(toggleButton);
-        answerContainer.appendChild(answerContent);
-
-        return answerContainer.outerHTML;
-      });
-    };
-
-    const newHtml = addCodeBlockStructure(contentHtml);
-    const finalHtml = addAnswerToggle(newHtml);
-    setModifiedHtml(finalHtml);
-  }, [contentHtml]);
-
-  // 添加事件监听器
   useEffect(() => {
     const container = containerRef.current;
-    if (container) {
-      const copyButtons = container.querySelectorAll('.copy-button');
-      copyButtons.forEach((button) => {
-        const codeElement = button.closest('.code-block-wrapper')?.querySelector('code');
-        if (codeElement) {
-          button.addEventListener('click', async () => {
-            try {
-              if ('clipboard' in navigator) {
-                await navigator.clipboard.writeText(codeElement.textContent || '');
-              } else {
-                const textArea = document.createElement('textarea');
-                textArea.value = codeElement.textContent || '';
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-              }
-              button.textContent = 'Copied';
-              setTimeout(() => {
-                button.textContent = 'Copy';
-              }, 2000);
-            } catch (error) {
-              console.error('Failed to copy text: ', error);
-            }
-          });
-        }
-      });
+    if (!container) return;
 
-      const toggleButtons = container.querySelectorAll('.toggle-answer-button');
-      toggleButtons.forEach((button) => {
-        const answerContent = button.nextElementSibling as HTMLElement;
-        if (answerContent) {
-          button.addEventListener('click', () => {
-            if (answerContent.style.display === 'none') {
-              answerContent.style.display = 'block';
-              button.textContent = '隐藏答案';
-            } else {
-              answerContent.style.display = 'none';
-              button.textContent = '显示答案';
-            }
-          });
-        }
-      });
-    }
+    // 复制按钮功能
+    const handleCopy = (e: MouseEvent) => {
+      const button = e.target as HTMLButtonElement;
+      if (!button.classList.contains('copy-button')) return;
+
+      const code = button.closest('.code-block-wrapper')?.querySelector('code');
+      if (!code) return;
+
+      navigator.clipboard.writeText(code.textContent || '')
+        .then(() => {
+          button.textContent = 'Copied!';
+          setTimeout(() => button.textContent = 'Copy', 2000);
+        })
+        .catch(err => console.error('Copy failed:', err));
+    };
+
+    // 答案切换功能
+    const handleToggle = (e: MouseEvent) => {
+      const button = e.target as HTMLButtonElement;
+      if (!button.classList.contains('toggle-answer-button')) return;
+
+      const content = button.nextElementSibling as HTMLElement;
+      if (!content) return;
+
+      content.style.display = content.style.display === 'none' ? 'block' : 'none';
+      button.textContent = content.style.display === 'none' ? '显示答案' : '隐藏答案';
+    };
+
+    container.addEventListener('click', handleCopy);
+    container.addEventListener('click', handleToggle);
+
+    return () => {
+      container.removeEventListener('click', handleCopy);
+      container.removeEventListener('click', handleToggle);
+    };
   }, [modifiedHtml]);
 
   return (
     <div
       ref={containerRef}
-      className="markdown-body mdx-content"
+      className={`markdown-body ${theme}`}
       dangerouslySetInnerHTML={{ __html: modifiedHtml }}
     />
   );

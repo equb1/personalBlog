@@ -55,21 +55,33 @@ export async function updatePost(id: string, data: { title: string; content: str
 
 export async function getLatestPosts() {
   const posts = await prisma.post.findMany({
-      
-      where: {
-          isPublished: true,
-          status: 'PUBLISHED'
-      },
-      include: {
-          user: true,
-          category: true,
-          tags: true
-      },
-      orderBy: {
-          publishedAt: 'desc'
-      },
-      take: 4
+    where: {
+      isPublished: true,
+      status: 'PUBLISHED'
+    },
+    include: {
+      user: true,
+      category: true,
+      tags: true // 确保包含标签
+    },
+    orderBy: {
+      publishedAt: 'desc'
+    },
+    take: 4
   });
-  //console.log('Returned posts:', posts); // 打印返回的文章数据
-  return posts;
+
+  // 将数据序列化为纯 JavaScript 对象
+  const serializedPosts = posts.map(post => ({
+    ...post,
+    createdAt: post.createdAt.toISOString(),
+    updatedAt: post.updatedAt.toISOString(),
+    publishedAt: post.publishedAt?.toISOString() || null,
+    tags: post.tags.map(tag => ({
+      id: tag.id,
+      name: tag.name,
+      slug: tag.slug
+    }))
+  }));
+
+  return serializedPosts;
 }

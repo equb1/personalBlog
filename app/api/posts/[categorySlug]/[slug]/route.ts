@@ -1,24 +1,23 @@
-// app/api/posts/[categorySlug]/[slug]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function GET(request: Request, { params }: { params: { categorySlug: string, slug: string } }) {
   try {
     const { categorySlug, slug } = params;
 
-    // 在数据库中查找文章
     const post = await prisma.post.findFirst({
       where: {
         slug,
-        category: {
-          slug: categorySlug
-        },
+        category: { slug: categorySlug },
         isPublished: true,
         status: 'PUBLISHED'
       },
       include: {
-        user: true,
-        category: true,
+        user: { select: { username: true, avatar: true } },
+        category: { select: { slug: true } },
         tags: true
       }
     });
@@ -27,9 +26,23 @@ export async function GET(request: Request, { params }: { params: { categorySlug
       return NextResponse.json({ error: '文章未找到' }, { status: 404 });
     }
 
-    return NextResponse.json(post);
+    // 更新浏览量
+    await prisma.post.update({
+      where: { id: post.id },
+      data: { views: { increment: 1 } }
+    });
+
+    return new NextResponse(JSON.stringify(post), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300'
+      }
+    });
   } catch (error) {
-    //console.error('Error fetching post:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Error fetching post:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
+    );
   }
 }

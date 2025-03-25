@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { Card } from './Card'
 import { SectionCardData } from '@/types/content'
 import { TechCategory } from '@/types/techCategory'
-import { ArrowRightIcon } from '@heroicons/react/24/outline' // 使用Heroicons
+import { ArrowRightIcon } from '@heroicons/react/24/outline'
 
 // 分类标签映射
 const TechCategoryLabels: Record<TechCategory, string> = {
   [TechCategory.FRONTEND]: '前端技术',
   [TechCategory.BACKEND]: '后端框架',
   [TechCategory.TOOLING]: '开发工具',
-  [TechCategory.TAG]: '文章标签' // 新增标签映射
+  [TechCategory.TAG]: '文章标签'
 } as const;
 
 interface SectionWrapperProps {
@@ -55,7 +55,7 @@ export const SectionWrapper = ({ sections }: SectionWrapperProps) => {
   }, [sections]);
 
   return (
-    <div className="space-y-16 py-16 ">
+    <div className="space-y-16 py-16">
       {memoizedSections.map((section) => (
         <section key={section.title} className="container mx-auto px-4">
           {/* 标题行 */}
@@ -103,18 +103,10 @@ export const SectionWrapper = ({ sections }: SectionWrapperProps) => {
 
           {/* 卡片网格 */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            
             {section.items.map((item) => (
               <Card
                 key={item.id}
                 data={processSectionData(item)}
-                techCategories={Array.from(
-                  new Set(
-                    item.techStack
-                      ?.map(t => t.category)
-                      .filter((c): c is TechCategory => c !== undefined) || []
-                  )
-                )}
               />
             ))}
           </div>
